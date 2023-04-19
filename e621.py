@@ -1,10 +1,10 @@
 import aiohttp
+import asyncio
 from .errors import ConfigUnfinishedError, WrongOrderTypeException, RequestException
 
 
 class E621Post(object):
-    def __init__(self, svc, id, sample_pic, origin_pic, preview) -> None:
-        self.svc = svc
+    def __init__(self, id: int, sample_pic: str, origin_pic: str, preview) -> None:
         self.id = id
         self.sample_pic = sample_pic
         self.origin_pic = origin_pic
@@ -63,7 +63,7 @@ class SearchFilter(object):
 class E621Service(object):
     def __init__(self, e621_account: str, e621_api_key: str, log, proxy: str) -> None:
         self.log = log
-        
+
         self.proxy = proxy
         if not e621_account or not e621_api_key:
             raise ConfigUnfinishedError()
@@ -75,10 +75,12 @@ class E621Service(object):
         }
         self.base_url = "https://e621.net"
 
-    def _new_sesson(self, header: dict[str, str] = None) -> aiohttp.ClientSession:
+    def _new_sesson(self, header: dict[str, str] = None, base_url='') -> aiohttp.ClientSession:
         if header is None or not isinstance(header, dict):
             header = self.default_header
-        return aiohttp.ClientSession(base_url=self.base_url,
+        if base_url == '':
+            base_url = self.base_url
+        return aiohttp.ClientSession(base_url=base_url,
                                      headers=header)
 
     async def search(self, search_filter: SearchFilter):
@@ -92,3 +94,17 @@ class E621Service(object):
                     return await resp.json()
                 else:
                     raise RequestException()
+
+    async def download_pic(self, post: E621Post) -> bytes:
+        url = post.sample_pic if post.sample_pic else post.origin_pic
+        async with self._new_sesson(base_url=None) as session:
+            async with session.get(url=url, proxy=self.proxy) as resp:
+                return await resp.read()
+
+    async def download_pics(self, posts: list[E621Post]) -> list[bytes]:
+        tasks = []
+        for post in posts:
+            tasks.append(self.download_pic(post))
+
+        pics: list[bytes] = await asyncio.gather(*tasks)
+        return pics

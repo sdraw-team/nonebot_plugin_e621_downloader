@@ -28,20 +28,17 @@ pic_command = on_shell_command(
 svc = E621Service(config.e621_account, config.e621_api_key, logger,
                   proxy=config.e621_proxy)
 
+
 @pic_command.handle()
 async def handle_function(matcher: Matcher, event: MessageEvent, args:  Namespace = ShellCommandArgs()):
     ltags = ' '.join(args.tags) if isinstance(args.tags, list) else ''
-    try: 
-        search_filter = SearchFilter()
-        search_filter.tags = ltags
-        search_filter.limit = args.number
-        search_filter.order = args.order
-        search_filter.rating = args.rating
-        search_filter.score = args.score
-        message = await search_pics(svc,search_filter=search_filter)
-    except Exception as e:
-        logger.error(str(e))
-        matcher.finish(str(e))
+    search_filter = SearchFilter()
+    search_filter.tags = ltags
+    search_filter.limit = args.number
+    search_filter.order = args.order
+    search_filter.rating = args.rating
+    search_filter.score = args.score
+    message = await search_pics(svc, search_filter=search_filter)
     if message:
         await matcher.finish(message=message)
     else:
