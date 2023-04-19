@@ -8,6 +8,7 @@ from nonebot.rule import ArgumentParser, Namespace
 from .e621 import E621Service, SearchFilter
 from .config import Config
 from .usecase import search_pics
+from nonebot.adapters.onebot.v11.exception import NetworkError
 
 config = Config.parse_obj(nonebot.get_driver().config.dict())
 
@@ -32,13 +33,18 @@ svc = E621Service(config.e621_account, config.e621_api_key, logger,
 @pic_command.handle()
 async def handle_function(matcher: Matcher, event: MessageEvent, args:  Namespace = ShellCommandArgs()):
     ltags = ' '.join(args.tags) if isinstance(args.tags, list) else ''
-    search_filter = SearchFilter()
-    search_filter.tags = ltags
-    search_filter.limit = args.number
-    search_filter.order = args.order
-    search_filter.rating = args.rating
-    search_filter.score = args.score
-    message = await search_pics(svc, search_filter=search_filter)
+
+    message = None
+    try:
+        search_filter = SearchFilter()
+        search_filter.tags = ltags
+        search_filter.limit = args.number
+        search_filter.order = args.order
+        search_filter.rating = args.rating
+        search_filter.score = args.score
+        message = await search_pics(svc, search_filter=search_filter)
+    except NetworkError:
+        matcher.finish("上传超时了，尝试减少图片请求数量或者再试一次吧･ﾟ(ﾉд`ﾟ)")
     if message:
         await matcher.finish(message=message)
     else:
