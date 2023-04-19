@@ -22,14 +22,15 @@ class e621:
             header = self.default_header
         return aio.ClientSession(base_url=self.base_url,
                                  headers=header)
-    async def search(self,tags:str,order:str="new",limit:int=1,rating:str = 's'):
+    async def search(self,tags:str,order:str="new",limit:int=1,rating:str = 's',score:int = 0):
         if not order in ['new','score','random']:
             raise WrongOrderTypeException
         rating = 's' if rating not in ['s','q','e'] else rating
         limit = 10 if limit>10 else limit
+        score = 50 if score>50 else score
         data = {
             "limit":limit,
-            "tags":f"order:{order} rating:{rating} "+tags
+            "tags":f"order:{order} rating:{rating} score:>={score} -webm "+tags
         }
         async with self.__sesson_new() as session:
             async with session.get('/posts.json',data = data) as resp:

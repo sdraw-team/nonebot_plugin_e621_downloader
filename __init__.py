@@ -5,7 +5,6 @@ from nonebot.matcher import Matcher
 from nonebot.rule import ArgumentParser,Namespace
 from .config import Config
 from .utils import unpack_seach_result,download_pic
-from .e621 import e621post
 from .errors import configUnfinishedError
 
 global_config = get_driver().config
@@ -15,6 +14,7 @@ pic_argument.add_argument('-t',nargs='*',help='标签',dest='tags')
 pic_argument.add_argument('-s',type=str,help='控制安全等级，s->q->e逐渐增大',dest='safe',default='s')
 pic_argument.add_argument('-o',type=str,help='图片拉取的顺序，默认random，可选new或者score',dest='order',default='random')
 pic_argument.add_argument('-n',type=int,help='图片数量，最多不超过10',dest='number',default = 1)
+pic_argument.add_argument('-r',type=int,help='图片的rating，最高不超过50',dest='score',default = 0)
 
 pic_command = on_shell_command("来点图",priority=10,block=True,parser=pic_argument,aliases={"e621",'来张图','621'})
 
@@ -23,7 +23,7 @@ pic_command = on_shell_command("来点图",priority=10,block=True,parser=pic_arg
 async def handle_function(args:  Namespace= ShellCommandArgs()):
     ltags =  ' '.join(args.tags) if type(args.tags) == list else ''
     try:
-        picList = await unpack_seach_result(tags=ltags,order=args.order,limit=args.number,rating=args.safe)
+        picList = await unpack_seach_result(tags=ltags,order=args.order,limit=args.number,rating=args.safe,score=args.score)
     except configUnfinishedError:
         pic_command.finish("有人没填写配置项，我不说是谁(;´ヮ`)7")
     if picList:

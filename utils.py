@@ -11,12 +11,12 @@ async def download_pic(post:e621post):
         async with session.get(url=url) as resp:
             return await resp.read()
 
-async def unpack_seach_result(tags,limit=1,order='new',rating = 's'):
+async def unpack_seach_result(tags,limit=1,order='new',rating = 's',score = 0):
     if e621_config.e621_account is None or e621_config.e621_api_key is None:
         raise configUnfinishedError
     e621x = e621(e621_config.e621_account,e621_config.e621_api_key)
     try:
-        result = (await e621x.search(limit=limit,order=order,tags=tags,rating = rating))['posts']
+        result = (await e621x.search(limit=limit,order=order,tags=tags,rating = rating,score=score))['posts']
     except WrongOrderTypeException:
         print("搜索排序类型错误")
         return False
