@@ -44,7 +44,7 @@ async def handle_function(matcher: Matcher, event: MessageEvent, args:  Namespac
         search_filter.score = args.score
         message = await search_pics(svc, search_filter=search_filter)
     except NetworkError:
-        matcher.finish("上传超时了，尝试减少图片请求数量或者再试一次吧･ﾟ(ﾉд`ﾟ)")
+        await matcher.finish("上传超时了，尝试减少图片请求数量或者再试一次吧･ﾟ(ﾉд`ﾟ)")
     if message:
         await matcher.finish(message=message)
     else:
