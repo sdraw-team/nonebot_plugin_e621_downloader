@@ -43,10 +43,10 @@ async def search_pics(svc: E621Service, search_filter: SearchFilter) -> Message:
         return Message(str(e))
     download_end = time.time()
     download_cost = download_end - download_start
-    svc.log.info("搜索耗时{}秒，下载了{}张图，耗时{:.2f}秒",
+    svc.log.info("搜索耗时{:.2f}秒，下载了{}张图，耗时{:.2f}秒",
                  search_cost, len(pics), download_cost)
 
-    message = Message(f'共{len(pics)}张图，耗时{download_end-download_start:.2f}秒')
+    message = Message(f'共{len(pics)}张图，耗时{download_cost:.2f}秒')
     for pic in pics:
         message.append(MessageSegment.image(pic))
 
